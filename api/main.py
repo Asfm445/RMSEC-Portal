@@ -1,9 +1,12 @@
 from typing import Union
+from api.router import user_router
 
 from fastapi import FastAPI
 
 app = FastAPI()
 
+
+app.include_router(user_router.router, prefix="/user", tags=["Users"])
 
 @app.get("/")
 def read_root():
