@@ -28,6 +28,7 @@ class Person(Base):
     registered_at = Column(DateTime, default=datetime.now)  # remove () so default is called at insert
     phone_number = Column(String, unique=True, index=True)
     hashed_password = Column(String)
+    person_id= Column(String, unique=True, index=True)
     # one-to-many for Role history (if you want history)
     roles = relationship("Role", back_populates="person", cascade="all, delete-orphan")
 
