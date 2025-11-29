@@ -54,6 +54,7 @@ class UserUseCase:
         
         user.phone_number = user.phone_number.replace(" ", "").replace("-", "")
         user.phone_number = user.phone_number[-8:]
+        # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
         existing_user = await self.user_repo.find_by_phone_number(user.phone_number)
         if existing_user:
@@ -91,6 +92,28 @@ class UserUseCase:
         refresh_token = self.jwt_service.create_refresh_token(data={"sub": user.person_id})
 
         return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+    
+
+    async def refresh_token(self, refresh_token: str):
+        payload = self.jwt_service.decode_token(refresh_token)
+        person_id: str = payload.get("sub")
+        if person_id is None:
+            raise BadRequestError("Invalid refresh token")
+        user = await self.user_repo.get_by_person_id(person_id)
+        if not user:
+            raise NotFoundError("User Not Found")
+        access_token = self.jwt_service.create_access_token(data={"sub": user.person_id, "roles": [role.type_id.value for role in user.roles]})
+        new_refresh_token = self.jwt_service.create_refresh_token(data={"sub": user.person_id})
+        return {"access_token": access_token, "refresh_token": new_refresh_token, "token_type": "bearer"}
+    
+
+    async def apply_student(self, person_id: str, grade: int):
+        user = await self.user_repo.get_by_person_id(person_id)
+        if not user:
+            raise NotFoundError("User Not Found")
+        self.user_repo.add_role(person_id, "student")
+        
+        return {"message": f"User {person_id} has successfully applied as a student for grade {grade}."}
         
 
         

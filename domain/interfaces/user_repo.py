@@ -18,3 +18,7 @@ class UserRepositoryInterface(ABC):
     @abstractmethod
     async def get_max_numeric_for_year(self, year_suffix: str) -> int | None:
         pass
+
+    @abstractmethod
+    async def add_role(self, person_id: str, role_type: str):
+        pass

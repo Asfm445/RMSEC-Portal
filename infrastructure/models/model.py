@@ -1,5 +1,5 @@
 from infrastructure.db.session import Base
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum as SQLEnum, Float
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum as SQLEnum, Float, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from enum import Enum as PyEnum
@@ -16,6 +16,7 @@ class Role(Base):
     type_id = Column(SQLEnum(RoleType, name="role_type"), nullable=False, index=True)
     taken_at = Column(DateTime, default=datetime.now)
     ended_at = Column(DateTime, nullable=True)
+    approved=Column(Boolean, default=False)
     person_id = Column(Integer, ForeignKey('persons.id', ondelete="CASCADE"), index=True)
 
     person = relationship("Person", back_populates="roles")

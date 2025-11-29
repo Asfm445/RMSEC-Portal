@@ -3,7 +3,7 @@ from domain.model import UserRegister
 from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.dto.user_dto import from_user_register_to_person, from_db_person_to_user
 from sqlalchemy import select, func, cast, Integer
-from infrastructure.models.model import Person
+from infrastructure.models.model import Person, Role
 from sqlalchemy.orm import selectinload
 from domain.model import User
 
@@ -49,7 +49,7 @@ class UserRepository(UserRepositoryInterface):
         result = await self.db.execute(
             select(Person).filter(Person.phone_number == phone_number)
         )
-        person = result.scalar_one_or_none() .options(selectinload(Person.roles))
+        person = result.scalar_one_or_none()
         if person:
             return UserRegister(
                 name=person.name,
@@ -58,3 +58,15 @@ class UserRepository(UserRepositoryInterface):
                 person_id=person.person_id
             )
         return None
+    
+    async def add_role(self, person_id: str, role_type: str):
+        result = await self.db.execute(
+            select(Person).filter(Person.person_id == person_id)
+        )
+        person = result.scalar_one_or_none()
+        if not person:
+            return False
+        new_role = Role(type_id=role_type, person=person)
+        self.db.add(new_role)
+        await self.db.commit()
+        return True
