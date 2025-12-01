@@ -9,5 +9,5 @@ def from_user_register_schema_to_model(user_schema: UserRegisterSchema) -> UserR
         password=user_schema.password
     )
 
-def from_user_login_schema_to_model(user_schema: UserLoginSchema) -> UserLogin:
-    return UserLogin(id= user_schema.id, password=user_schema.password)
+def from_user_login_schema_to_model(user_schema: dict) -> UserLogin:
+    return UserLogin(id= user_schema["id"], password=user_schema["password"])

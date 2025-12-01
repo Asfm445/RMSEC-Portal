@@ -32,21 +32,21 @@ def get_usecase(db: AsyncSession = Depends(get_db))-> UserUseCase:
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    user_usecase: UserUseCase = Depends(get_usecase),):
-    
+    user_usecase: UserUseCase = Depends(get_usecase),
+):
     try:
-        payload, err = user_usecase.jwt_service.decode_token(token)
-        if not payload:
-            raise HTTPException(status_code=400, detail=err)
-    
-        if "sub" not in payload:
+        payload = user_usecase.jwt_service.decode_token(token)  # only one value
+        print("++++++++++++++++++++++++++++++++++++++++++++++++here in dependencies++++++++++++++++++++++")
+        print(payload)
+        if not payload or "sub" not in payload:
             raise HTTPException(
-                status_code=401, detail="Invalid authentication credentialsss"
+                status_code=401, detail="Invalid authentication credentials"
             )
     except JWTError:
         raise HTTPException(
             status_code=401, detail="Invalid authentication credentials"
         )
     return payload
+
 
 

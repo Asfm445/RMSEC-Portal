@@ -6,7 +6,7 @@ from fastapi import FastAPI
 app = FastAPI()
 
 
-app.include_router(user_router.router, prefix="/user", tags=["Users"])
+app.include_router(user_router.router, prefix="/auth", tags=["Users"])
 
 @app.get("/")
 def read_root():

@@ -86,35 +86,55 @@ class UserUseCase:
             raise NotFoundError("User Not Found")
         if not self.pass_service.verify_password(user_login.password, user.hashed_password):
             raise BadRequestError("Invalid Password")
-        print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-        print(user.roles)
-        access_token = self.jwt_service.create_access_token(data={"sub": user.person_id, "roles": [role.type_id.value for role in user.roles]})
-        refresh_token = self.jwt_service.create_refresh_token(data={"sub": user.person_id})
+        roles=[]
+        if user.student:
+            roles.append("student")
+        if user.teacher:
+            roles.append("teacher")
+        if user.admin:
+            roles.append("admin")
+
+        access_token = self.jwt_service.create_access_token(data={"sub": str(user.id), "roles": roles})
+        refresh_token = self.jwt_service.create_refresh_token(data={"sub": str(user.id)})
 
         return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
     
 
     async def refresh_token(self, refresh_token: str):
         payload = self.jwt_service.decode_token(refresh_token)
-        person_id: str = payload.get("sub")
+        person_id: int = payload.get("sub")
         if person_id is None:
             raise BadRequestError("Invalid refresh token")
-        user = await self.user_repo.get_by_person_id(person_id)
+        user = await self.user_repo.get_by_id(person_id)
         if not user:
             raise NotFoundError("User Not Found")
-        access_token = self.jwt_service.create_access_token(data={"sub": user.person_id, "roles": [role.type_id.value for role in user.roles]})
-        new_refresh_token = self.jwt_service.create_refresh_token(data={"sub": user.person_id})
+        access_token = self.jwt_service.create_access_token(data={"sub": user.id, "roles": [role.type_id.value for role in user.roles]})
+        new_refresh_token = self.jwt_service.create_refresh_token(data={"sub": user.id})
         return {"access_token": access_token, "refresh_token": new_refresh_token, "token_type": "bearer"}
     
 
-    async def apply_student(self, person_id: str, grade: int):
-        user = await self.user_repo.get_by_person_id(person_id)
+    async def apply_student(self, person_id: int, grade_no: int):
+        if grade_no < 1 or grade_no > 12:
+            raise BadRequestError("Invalid grade number")
+        user = await self.user_repo.get_by_id(person_id)
         if not user:
             raise NotFoundError("User Not Found")
-        self.user_repo.add_role(person_id, "student")
-        
-        return {"message": f"User {person_id} has successfully applied as a student for grade {grade}."}
-        
 
-        
+
+        # If student record exists and already applied to this grade
+        if user.student and any(g.grade_No == grade_no for g in user.student.grades):
+            raise BadRequestError("User already applied to this grade")
+
+
+        # Compute Ethiopian year
+        g = date.today()
+        eth_year = g.year - 7 if (g.month > 9 or (g.month == 9 and g.day >= 11)) else g.year - 8
+
+        await self.user_repo.add_student_to_grade(person_id, grade_no, eth_year)
+
+        return {"message": f"User {person_id} has successfully applied as a student for grade {grade_no}."}
+
+            
+
+            
 
