@@ -32,24 +32,17 @@ class UserRepositoryInterface(ABC):
         """
 
     @abstractmethod
-    async def add_student_to_grade(self, person_id: str, grade_no: int, year: int):
+    async def get_by_id(self, id: int) -> User | None:  
         pass
 
     @abstractmethod
-    async def add_teacher(self, person_id: str) -> bool:
-        """
-        Assign user role: teacher
-        Since only one role exists per person type, create matching record.
-        Returns True if assigned, False if person not found or invalid role.
-        """
+    async def check_user_exist(self, person_id: str) -> bool:
+        pass
 
     @abstractmethod
-    async def add_admin(self, person_id: str) -> bool:
-        """
-        Assign user role: admin
-        Since only one role exists per person type, create matching record.
-        Returns True if assigned, False if person not found or invalid role.
-        """
+    async def check_phone_number_exist(self, phone_number: str) -> bool:
+        pass
+
     @abstractmethod
-    async def get_by_id(self, id: int) -> User | None:  
+    async def get_user_roles(self, person_id: str) -> list[str] | None:
         pass

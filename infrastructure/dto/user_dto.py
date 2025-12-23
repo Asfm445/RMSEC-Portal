@@ -27,7 +27,4 @@ def from_db_person_to_user(person: Person) -> User:
         phone_number=person.phone_number,
         registered_at=person.registered_at,
         hashed_password=person.hashed_password,
-        student=person.student,
-        teacher=person.teacher,
-        admin=person.admin
     )

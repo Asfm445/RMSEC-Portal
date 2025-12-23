@@ -9,6 +9,9 @@ from fastapi import Depends, HTTPException
 from jose import JWTError
 import os
 from fastapi.security import OAuth2PasswordBearer
+from usecase.student_usecase import StudentUseCase
+from infrastructure.repository.student_repo import StudentRepository
+from api.utilities.handle_errors import handle_service_result
 
 async def get_db() -> AsyncSession:
     async with AsyncSessionLocal() as db:
@@ -29,6 +32,12 @@ def get_usecase(db: AsyncSession = Depends(get_db))-> UserUseCase:
 
     return UserUseCase(user_repo, pass_service,jwt_service)
 
+def get_student_usecase(db: AsyncSession = Depends(get_db))-> StudentUseCase:
+    user_repo=UserRepository(db)
+    student_repo=StudentRepository(db)
+
+    return StudentUseCase(student_repo,user_repo)
+
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -36,8 +45,6 @@ async def get_current_user(
 ):
     try:
         payload = user_usecase.jwt_service.decode_token(token)  # only one value
-        print("++++++++++++++++++++++++++++++++++++++++++++++++here in dependencies++++++++++++++++++++++")
-        print(payload)
         if not payload or "sub" not in payload:
             raise HTTPException(
                 status_code=401, detail="Invalid authentication credentials"

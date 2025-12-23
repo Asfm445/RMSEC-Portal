@@ -2,4 +2,4 @@ env
 .env
 .vscode
 __pycache__
-alembic/versions/*
+

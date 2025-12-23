@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from api.schema.user_schema import UserRegisterSchema, UserLogin, Refresh, StudentApplicationSchema
-from api.dependencies import get_usecase, get_current_user
+from api.dependencies import get_usecase, get_current_user, get_student_usecase
 from api.dto.user_dto import from_user_register_schema_to_model, from_user_login_schema_to_model
 from api.utilities.handle_errors import handle_service_result
 from fastapi.security import OAuth2PasswordRequestForm
@@ -26,8 +26,6 @@ async def user_login(
     Login endpoint compatible with FastAPI OAuth2 docs.
     Use 'username' for person_id and 'password' for password.
     """
-    print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-    print(form_data.__dict__)
     user_login_model = from_user_login_schema_to_model({
         "id": form_data.username,  # map username to your person_id
         "password": form_data.password
@@ -42,7 +40,5 @@ async def refresh_token(refresh_token: Refresh, usecase=Depends(get_usecase)):
 
 @router.post("/apply_student")
 @handle_service_result
-async def apply_student(application: StudentApplicationSchema, usecase=Depends(get_usecase),current_user=Depends(get_current_user)):
-    print("+++++++++++++++++++++++++++++++++++hre i router++++++++++++++++")
-    print(current_user)
+async def apply_student(application: StudentApplicationSchema, usecase=Depends(get_student_usecase),current_user=Depends(get_current_user)):
     return await usecase.apply_student(int(current_user["sub"]), application.grade)

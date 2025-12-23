@@ -1,31 +1,19 @@
 from infrastructure.db.session import Base
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Boolean, Table
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
-
-# Association table for many-to-many between students and grades
-student_grade_association = Table(
-    'student_grades',
-    Base.metadata,
-    Column('student_id', Integer, ForeignKey('students.id', ondelete="CASCADE"), primary_key=True),
-    Column('grade_id', Integer, ForeignKey('grades.id', ondelete="CASCADE"), primary_key=True)
-)
 
 
 class Person(Base):
     __tablename__ = "persons"
 
     id = Column(Integer, primary_key=True, index=True)
+    person_id = Column(String, unique=True, index=True)
     name = Column(String, index=True)
     registered_at = Column(DateTime, default=datetime.now)
     phone_number = Column(String, unique=True, index=True)
     hashed_password = Column(String)
-    person_id = Column(String, unique=True, index=True)
 
-    # One-to-one relationships to specific profiles
-    student = relationship("Student", back_populates="person", uselist=False)
-    teacher = relationship("Teacher", back_populates="person", uselist=False)
-    admin = relationship("Admin", back_populates="person", uselist=False)
 
 
 class Student(Base):
@@ -33,15 +21,10 @@ class Student(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     person_id = Column(Integer, ForeignKey('persons.id', ondelete="CASCADE"), unique=True, index=True)
+    grade_no = Column(Integer, index=True)
+    year = Column(Integer, index=True)
     approved = Column(Boolean, default=False)
 
-    person = relationship("Person", back_populates="student", uselist=False)
-    grades = relationship(
-        "Grade",
-        secondary=student_grade_association,
-        back_populates="students",
-        uselist=True
-    )
 
 
 class Teacher(Base):
@@ -50,9 +33,8 @@ class Teacher(Base):
     id = Column(Integer, primary_key=True, index=True)
     person_id = Column(Integer, ForeignKey('persons.id', ondelete="CASCADE"), unique=True, index=True)
     approved = Column(Boolean, default=False)
+    grade_no = Column(Integer, index=True)
 
-    person = relationship("Person", back_populates="teacher", uselist=False)
-    subjects = relationship("Subject", back_populates="teacher", uselist=True)  # One teacher -> many subjects
 
 
 class Admin(Base):
@@ -62,7 +44,7 @@ class Admin(Base):
     position = Column(String, index=True)
     person_id = Column(Integer, ForeignKey('persons.id', ondelete="CASCADE"), unique=True, index=True)
 
-    person = relationship("Person", back_populates="admin", uselist=False)
+    
 
 
 class Grade(Base):
@@ -70,16 +52,9 @@ class Grade(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     year = Column(Integer, index=True)
-    grade_No = Column(Integer, index=True)
-    total_point = Column(Float, nullable=True)
+    grade_no = Column(Integer, index=True)
 
-    subjects = relationship("Subject", back_populates="grade", uselist=True)  # One grade -> many subjects
-    students = relationship(
-        "Student",
-        secondary=student_grade_association,
-        back_populates="grades",
-        uselist=True
-    )
+    
 
 
 class Subject(Base):
@@ -87,9 +62,7 @@ class Subject(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
-
+    year = Column(Integer, index=True)
+    grade_no = Column(Integer, index=True)
     teacher_id = Column(Integer, ForeignKey('teachers.id'), index=True)
-    grade_id = Column(Integer, ForeignKey('grades.id', ondelete="CASCADE"), index=True)
 
-    teacher = relationship("Teacher", back_populates="subjects", uselist=False)
-    grade = relationship("Grade", back_populates="subjects", uselist=False)

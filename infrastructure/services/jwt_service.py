@@ -31,10 +31,4 @@ class JwtService(JWTServiceInterface):
         encoded_jwt = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_jwt
     def decode_token(self, token: str) -> dict:
-        try:
-            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-            return payload
-        except ExpiredSignatureError:
-            raise BadRequestError("Token has expired")
-        except JWTError:
-            raise BadRequestError("Invalid token")
+        return jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])

@@ -25,6 +25,3 @@ class User:
     phone_number: str
     registered_at: datetime
     hashed_password: str
-    student: Optional[bool] = None  # True if user has a Student record
-    teacher: Optional[bool] = None  # True if user has a Teacher record
-    admin: Optional[bool] = None    # True if user has an Admin record
